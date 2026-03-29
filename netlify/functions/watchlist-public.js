@@ -11,7 +11,7 @@ exports.handler = async () => {
 
   const rows = await res.json();
   // jsonb — вже об'єкт, JSON.parse не потрібен
-  const data = rows[0].data;
+  const data = JSON.parse(rows[0].data);
 
   const clean = data.map(({ ticker, score, cat, note, updated }) => ({
     ticker, score, cat, note, updated
