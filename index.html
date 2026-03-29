@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Watchlist Tracker</title>
+<style>
+:root {
+  --color-text-primary: #e8e8e8;
+  --color-text-secondary: #9a9a9a;
+  --color-text-tertiary: #606060;
+  --color-text-success: #5a9e4a;
+  --color-text-danger: #d05050;
+  --color-text-info: #5a8fc4;
+  --color-background-primary: #1a1a1a;
+  --color-background-secondary: #242424;
+  --color-background-success: #1a2e1a;
+  --color-background-danger: #2e1a1a;
+  --color-background-info: #1a2233;
+  --color-border-secondary: #2e2e2e;
+  --color-border-tertiary: #262626;
+  --color-border-success: #3a6a3a;
+  --color-border-danger: #6a3a3a;
+  --color-border-info: #3a5a7a;
+  --border-radius-md: 6px;
+  --font-mono: 'SF Mono', 'Fira Code', monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--color-background-primary); color: var(--color-text-primary); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 13px; padding: 0.75rem; }
+.c { padding: 0.5rem 0; }
+.hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 8px; }
+.ttl { font-size: 15px; font-weight: 500; }
+.stats { display: flex; gap: 5px; flex-wrap: wrap; }
+.st { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 3px 8px; font-size: 12px; color: var(--color-text-secondary); border: 0.5px solid var(--color-border-tertiary); }
+.st span { font-weight: 500; color: var(--color-text-primary); }
+.topbar { display: flex; gap: 6px; margin-bottom: 0.75rem; flex-wrap: wrap; align-items: center; }
+.row { display: flex; gap: 6px; margin-bottom: 0.75rem; flex-wrap: wrap; align-items: center; }
+.row input, .row select { font-size: 13px; padding: 5px 8px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: var(--color-background-primary); color: var(--color-text-primary); outline: none; }
+.w80 { width: 80px; } .w130 { width: 130px; }
+.btn { font-size: 12px; padding: 5px 10px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: transparent; color: var(--color-text-primary); cursor: pointer; white-space: nowrap; }
+.btn:hover { background: var(--color-background-secondary); }
+.btn.p { background: var(--color-background-info); color: var(--color-text-info); border-color: var(--color-border-info); }
+.btn.s { background: var(--color-background-success); color: var(--color-text-success); border-color: var(--color-border-success); font-weight: 500; }
+.btn.d { color: var(--color-text-danger); border-color: var(--color-border-danger); }
+.imp-box { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 0.75rem; margin-bottom: 0.75rem; display: none; }
+.imp-box textarea { width: 100%; font-size: 11px; font-family: var(--font-mono); padding: 5px 7px; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); background: var(--color-background-secondary); color: var(--color-text-primary); resize: vertical; height: 80px; margin-top: 6px; outline: none; }
+.frow { display: flex; gap: 6px; margin-bottom: 0.75rem; flex-wrap: wrap; align-items: center; }
+.frow input { flex: 1; min-width: 120px; font-size: 13px; padding: 5px 8px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: var(--color-background-primary); color: var(--color-text-primary); outline: none; }
+.fbtns { display: flex; gap: 3px; flex-wrap: wrap; }
+.fb { font-size: 11px; padding: 3px 7px; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); background: transparent; color: var(--color-text-secondary); cursor: pointer; white-space: nowrap; }
+.fb.a { background: var(--color-background-secondary); color: var(--color-text-primary); border-color: var(--color-border-secondary); }
+.fb.sw { border-color: #6a2a2a; color: var(--color-text-danger); }
+.fb.sw.a { background: var(--color-background-danger); color: var(--color-text-danger); border-color: var(--color-border-danger); }
+.fb.ht { border-color: #6a4a1a; color: #c4881a; }
+.fb.ht.a { background: #2e2010; color: #c4881a; border-color: #8a5a1a; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead th { text-align: left; padding: 5px 6px; font-size: 11px; font-weight: 500; color: var(--color-text-secondary); border-bottom: 0.5px solid var(--color-border-tertiary); cursor: pointer; user-select: none; white-space: nowrap; }
+thead th:hover { color: var(--color-text-primary); }
+tbody tr { border-bottom: 0.5px solid var(--color-border-tertiary); }
+tbody tr:hover { background: var(--color-background-secondary); }
+tbody tr.swr { background: rgba(180,50,50,0.08); }
+tbody tr.hr { background: rgba(180,120,30,0.07); }
+tbody tr.trr { background: rgba(180,160,50,0.05); }
+td { padding: 5px 6px; vertical-align: middle; }
+.tk { font-weight: 500; font-size: 13px; }
+.sw2 { display: flex; align-items: center; gap: 3px; }
+.sv { font-weight: 500; font-size: 14px; min-width: 28px; text-align: center; }
+.pos { color: var(--color-text-success); }
+.neg { color: var(--color-text-danger); }
+.zer { color: var(--color-text-secondary); }
+.db { width: 20px; height: 20px; border: 0.5px solid var(--color-border-tertiary); background: transparent; border-radius: 3px; cursor: pointer; font-size: 13px; color: var(--color-text-secondary); display: flex; align-items: center; justify-content: center; }
+.db:hover { background: var(--color-background-secondary); }
+.dlt { font-size: 11px; font-weight: 500; padding: 1px 5px; border-radius: 8px; }
+.du { background: #1a2e0a; color: #5a9e3a; }
+.dd { background: #2e0a0a; color: #c04040; }
+.dz { color: var(--color-text-tertiary); font-size: 11px; }
+.dh { background: #2e1a00; color: #b07020; font-weight: 500; }
+.cs { font-size: 11px; padding: 2px 4px; border: 0.5px solid var(--color-border-tertiary); border-radius: 3px; background: var(--color-background-primary); color: var(--color-text-secondary); cursor: pointer; outline: none; }
+.upd { font-size: 10px; color: var(--color-text-tertiary); }
+.xb { width: 20px; height: 20px; border: none; background: transparent; cursor: pointer; font-size: 14px; border-radius: 3px; color: var(--color-text-tertiary); }
+.xb:hover { background: var(--color-background-danger); color: var(--color-text-danger); }
+.nc { max-width: 160px; cursor: pointer; }
+.nt { font-size: 11px; color: var(--color-text-tertiary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; min-height: 16px; padding: 1px 3px; border-radius: 3px; }
+.nt:hover { background: var(--color-background-secondary); }
+.nte { opacity: 0.35; }
+.ni { font-size: 11px; width: 100%; padding: 2px 5px; border: 0.5px solid var(--color-border-info); border-radius: 3px; background: var(--color-background-primary); color: var(--color-text-primary); outline: none; }
+.ba { margin-top: 0.75rem; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 0.75rem; }
+.ba textarea { width: 100%; font-size: 12px; font-family: var(--font-mono); padding: 5px 7px; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); background: var(--color-background-secondary); color: var(--color-text-primary); resize: vertical; min-height: 52px; outline: none; }
+.hint { font-size: 11px; color: var(--color-text-tertiary); }
+.em { text-align: center; padding: 2rem; color: var(--color-text-tertiary); font-size: 13px; }
+.exp-box { margin-top: 0.5rem; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 0.75rem; display: none; }
+.exp-box textarea { width: 100%; font-size: 11px; font-family: var(--font-mono); padding: 5px; border: 0.5px solid var(--color-border-tertiary); border-radius: 3px; background: var(--color-background-secondary); color: var(--color-text-primary); resize: vertical; height: 110px; outline: none; }
+.lbl { font-size: 12px; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 5px; }
+.msg { font-size: 12px; color: var(--color-text-tertiary); }
+.msg.ok { color: var(--color-text-success); }
+.sync-badge { font-size: 10px; padding: 2px 6px; border-radius: 10px; margin-left: 6px; }
+.sync-ok { background: var(--color-background-success); color: var(--color-text-success); }
+.sync-err { background: var(--color-background-danger); color: var(--color-text-danger); }
+.sync-loading { color: var(--color-text-secondary); }
+</style>
+</head>
+<body>
+<div class="c">
+  <div class="hdr">
+    <div class="ttl">Watchlist Tracker <span id="sync-badge" class="sync-badge sync-loading">⏳</span></div>
+    <div class="stats">
+      <div class="st">Всього: <span id="s0">0</span></div>
+      <div class="st">Bull: <span id="s1">0</span></div>
+      <div class="st">S_Watch: <span id="s2">0</span></div>
+      <div class="st">Trade: <span id="s3">0</span></div>
+      <div class="st">🔥 7д: <span id="s4">0</span></div>
+      <div class="st">Топ шорт: <span id="s5">—</span></div>
+    </div>
+  </div>
+  <div class="topbar">
+    <button class="btn s" id="exp-btn">📥 Експорт CSV</button>
+    <button class="btn p" id="imp-toggle">📤 Імпорт CSV</button>
+    <button class="btn d" id="clr-btn">Очистити все</button>
+    <span class="msg ok" id="top-msg">⏳ Завантаження...</span>
+  </div>
+  <div class="imp-box" id="imp-box">
+    <div class="lbl">Вставити CSV</div>
+    <textarea id="cit" placeholder="Cmd+A → Cmd+C з файлу → вставте сюди"></textarea>
+    <div style="display:flex;gap:6px;margin-top:8px;align-items:center">
+      <button class="btn p" id="imp-btn">Завантажити ↗</button>
+      <span id="imp-msg" class="msg"></span>
+    </div>
+  </div>
+  <div class="exp-box" id="exp-box">
+    <div class="lbl">CSV — Cmd+A → Cmd+C → збережи як watchlist.csv</div>
+    <textarea id="cet" readonly></textarea>
+    <button class="btn" style="margin-top:6px" id="exp-close">Закрити</button>
+  </div>
+  <div class="row">
+    <input id="nt" class="w130" placeholder="Тікер" />
+    <input id="ns" type="number" class="w80" value="0" />
+    <select id="nc">
+      <option value="Long">Long</option>
+      <option value="Hype">Hype</option>
+      <option value="Trade">Trade</option>
+      <option value="Watch">Watch</option>
+      <option value="S_Watch">S_Watch</option>
+    </select>
+    <input id="nn" class="w130" placeholder="Нотатка" />
+    <button class="btn p" id="add-btn">+ Додати</button>
+  </div>
+  <div class="frow">
+    <input id="srch" placeholder="Пошук..." />
+    <div class="fbtns">
+      <button class="fb a" data-f="all">Всі</button>
+      <button class="fb ht" data-f="hot">🔥 Гарячі</button>
+      <button class="fb" data-f="bull">↑ Bull</button>
+      <button class="fb" data-f="Long">Long</button>
+      <button class="fb" data-f="Hype">Hype</button>
+      <button class="fb" data-f="Trade">Trade</button>
+      <button class="fb" data-f="Watch">Watch</button>
+      <button class="fb sw" data-f="S_Watch">S_Watch ↓</button>
+    </div>
+  </div>
+  <div style="overflow-x:auto">
+    <table>
+      <thead><tr>
+        <th data-s="ticker">Тікер <span id="hs0"></span></th>
+        <th data-s="score">Бал <span id="hs1">↓</span></th>
+        <th data-s="d7">7д <span id="hs2"></span></th>
+        <th data-s="cat">Категорія <span id="hs3"></span></th>
+        <th>Нотатка <span style="font-size:10px;color:var(--color-text-tertiary);font-weight:400">(клік)</span></th>
+        <th data-s="updated">Дата <span id="hs4"></span></th>
+        <th></th>
+      </tr></thead>
+      <tbody id="tb"></tbody>
+    </table>
+  </div>
+  <div class="ba">
+    <div class="lbl">Вставити оновлення від Claude</div>
+    <textarea id="bi" placeholder="Оновлення вотчлісту: LNG+2, OWL-2, SBUX-1"></textarea>
+    <div style="display:flex;gap:6px;margin-top:6px;align-items:center;flex-wrap:wrap">
+      <button class="btn p" id="bulk-btn">Застосувати ↗</button>
+      <button class="btn" id="bulk-clr">Очистити</button>
+      <span id="bulk-msg" style="font-size:12px;color:var(--color-text-success)"></span>
+    </div>
+    <div class="hint" style="margin-top:4px">S_Watch: погана новина = -1/-2 · Решта: +1/+2 · Зміни зберігаються в хмарі ☁️</div>
+  </div>
+</div>
+
+<script>
+(function() {
+  // ─── SUPABASE CONFIG ───
+  const SUPABASE_URL = 'https://znpmxqjkyxlanqbyflyy.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpucG14cWpreXhsYW5xYnlmbHl5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxNTU0NjcsImV4cCI6MjA4OTczMTQ2N30.noKaNHgmE4IJfWHVwuiK2_Z5yuEXG0JN_rlmrvG8al4';
+  const ROW_ID = 'main';
+  const API = `${SUPABASE_URL}/rest/v1/watchlist`;
+  const HEADERS = {
+    'Content-Type': 'application/json',
+    'apikey': SUPABASE_KEY,
+    'Authorization': `Bearer ${SUPABASE_KEY}`,
+    'Prefer': 'resolution=merge-duplicates'
+  };
+
+  // ─── STATE ───
+  const TODAY = new Date().toLocaleDateString('uk');
+  const NTS = Date.now();
+  const DMS = 86400000;
+  const CATS = ['Long','Hype','Trade','Watch','S_Watch'];
+  const HOT = 3;
+  let D = [];
+  let SK = 'score', SD = -1, FM = 'all';
+  let saveTimer = null;
+  const g = id => document.getElementById(id);
+
+  // ─── SUPABASE ───
+  function setSyncBadge(state) {
+    const b = g('sync-badge');
+    if (!b) return;
+    if (state === 'ok') { b.className = 'sync-badge sync-ok'; b.textContent = '☁️ збережено'; }
+    else if (state === 'saving') { b.className = 'sync-badge sync-loading'; b.textContent = '⏳ збереження...'; }
+    else if (state === 'err') { b.className = 'sync-badge sync-err'; b.textContent = '⚠️ помилка'; }
+    else if (state === 'loading') { b.className = 'sync-badge sync-loading'; b.textContent = '⏳ завантаження...'; }
+  }
+
+  async function saveToSupabase() {
+    setSyncBadge('saving');
+    try {
+      const res = await fetch(API, {
+        method: 'POST',
+        headers: HEADERS,
+        body: JSON.stringify({ id: ROW_ID, data: JSON.stringify(D), updated_at: new Date().toISOString() })
+      });
+      if (!res.ok) throw new Error(await res.text());
+      setSyncBadge('ok');
+    } catch(e) {
+      setSyncBadge('err');
+      console.error('Supabase save error:', e);
+    }
+  }
+
+  async function loadFromSupabase() {
+    setSyncBadge('loading');
+    try {
+      const res = await fetch(`${API}?id=eq.${ROW_ID}&select=data`, { headers: HEADERS });
+      if (!res.ok) throw new Error(await res.text());
+      const rows = await res.json();
+      if (rows && rows.length > 0 && rows[0].data) {
+        const parsed = JSON.parse(rows[0].data);
+        if (parsed && parsed.length > 0) {
+          D = parsed;
+          render(); upS();
+          g('top-msg').textContent = '✓ ' + D.length + ' тікерів';
+          setSyncBadge('ok');
+          return;
+        }
+      }
+    } catch(e) {
+      console.error('Supabase load error:', e);
+      setSyncBadge('err');
+    }
+    // Fallback to SEED
+    loadSeed();
+  }
+
+  function scheduleSave() {
+    if (saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveToSupabase, 600);
+  }
+
+  function loadSeed() {
+    try {
+      D = parseCSV(SEED);
+      render(); upS();
+      g('top-msg').textContent = '✓ ' + D.length + ' тікерів (SEED 20.03.2026)';
+      setSyncBadge('ok');
+      saveToSupabase();
+    } catch(e) {
+      g('tb').innerHTML = '<tr><td colspan="7" class="em">'+e.message+'</td></tr>';
+    }
+  }
+
+  // ─── RENDER ───
+  function d7(x) {
+    if (!x.history || !x.history.length) return 0;
+    return x.history.filter(h => h.ts >= NTS - 7*DMS).reduce((s,h) => s+h.d, 0);
+  }
+
+  function render() {
+    const q = (g('srch').value || '').toUpperCase();
+    let f = D.map(d => ({...d, _d7: d7(d)})).filter(d => {
+      if (q && !d.ticker.includes(q) && !(d.note||'').toUpperCase().includes(q)) return false;
+      if (FM==='bull') return d.score>0 && d.cat!=='S_Watch';
+      if (FM==='hot') return Math.abs(d._d7)>=HOT && d.cat!=='Trade';
+      if (CATS.includes(FM)) return d.cat===FM;
+      return true;
+    });
+    f.sort((a,b) => {
+      let av = SK==='d7' ? a._d7 : a[SK]||0;
+      let bv = SK==='d7' ? b._d7 : b[SK]||0;
+      if (typeof av==='string') return SD*String(av).localeCompare(String(bv));
+      if (SK==='score' && FM==='S_Watch') return Number(av)-Number(bv);
+      return SD*(Number(av)-Number(bv));
+    });
+    const tb = g('tb');
+    if (!f.length) { tb.innerHTML='<tr><td colspan="7" class="em">Нічого не знайдено</td></tr>'; return; }
+    tb.innerHTML = f.map(d => {
+      const iSW=d.cat==='S_Watch', iT=d.cat==='Trade';
+      const iH=Math.abs(d._d7)>=HOT&&!iT;
+      const sc=d.score>0?'pos':d.score<0?'neg':'zer', sg=d.score>0?'+':'';
+      const op=CATS.map(c=>`<option value="${c}"${c===d.cat?' selected':''}>${c}</option>`).join('');
+      const dh=d._d7===0||iT?'<span class="dz">—</span>':`<span class="dlt ${iH?'dh':d._d7>0?'du':'dd'}">${d._d7>0?'+':''}${d._d7}${iH&&d._d7>0?' 🔥':''}</span>`;
+      const rc=iSW?' class="swr"':iT?' class="trr"':iH?' class="hr"':'';
+      const nd=d.note?`<span class="nt" title="${(d.note||'').replace(/"/g,'&quot;')}">${d.note}</span>`:`<span class="nt nte">+ додати</span>`;
+      return `<tr${rc}><td class="tk">${d.ticker}</td><td><div class="sw2"><button class="db dec-btn" data-t="${d.ticker}">−</button><span class="sv ${sc}">${sg}${d.score}</span><button class="db inc-btn" data-t="${d.ticker}">+</button></div></td><td>${dh}</td><td><select class="cs cat-sel" data-t="${d.ticker}">${op}</select></td><td class="nc note-cell" data-t="${d.ticker}" id="nc${d.ticker}">${nd}</td><td><span class="upd">${d.updated||'—'}</span></td><td><button class="xb rm-btn" data-t="${d.ticker}">×</button></td></tr>`;
+    }).join('');
+    tb.querySelectorAll('.dec-btn').forEach(b=>b.addEventListener('click',()=>chg(b.dataset.t,-1)));
+    tb.querySelectorAll('.inc-btn').forEach(b=>b.addEventListener('click',()=>chg(b.dataset.t,+1)));
+    tb.querySelectorAll('.cat-sel').forEach(s=>s.addEventListener('change',()=>cc(s.dataset.t,s.value)));
+    tb.querySelectorAll('.rm-btn').forEach(b=>b.addEventListener('click',()=>rm(b.dataset.t)));
+    tb.querySelectorAll('.note-cell').forEach(el=>el.addEventListener('click',()=>eN(el.dataset.t)));
+  }
+
+  function upS() {
+    g('s0').textContent=D.length;
+    g('s1').textContent=D.filter(d=>d.score>0&&d.cat!=='S_Watch').length;
+    g('s2').textContent=D.filter(d=>d.cat==='S_Watch').length;
+    g('s3').textContent=D.filter(d=>d.cat==='Trade').length;
+    g('s4').textContent=D.filter(d=>Math.abs(d7(d))>=HOT&&d.cat!=='Trade').length;
+    const ts=[...D].filter(d=>d.cat==='S_Watch').sort((a,b)=>a.score-b.score).slice(0,3).map(d=>d.ticker).join(', ');
+    g('s5').textContent=ts||'—';
+  }
+
+  function chg(t,delta){
+    const i=D.find(x=>x.ticker===t);if(!i)return;
+    i.score+=delta;i.updated=TODAY;i.history.push({ts:NTS,d:delta});
+    render();upS();scheduleSave();
+  }
+  function cc(t,v){
+    const i=D.find(x=>x.ticker===t);if(!i)return;
+    i.cat=v;i.updated=TODAY;
+    render();upS();scheduleSave();
+  }
+  function rm(t){
+    D=D.filter(x=>x.ticker!==t);
+    render();upS();scheduleSave();
+  }
+
+  function eN(t) {
+    const i=D.find(x=>x.ticker===t);if(!i)return;
+    const el=g('nc'+t);if(!el)return;
+    el.innerHTML=`<input class="ni" id="ni${t}" value="${(i.note||'').replace(/"/g,'&quot;')}" placeholder="Нотатка..."/>`;
+    const inp=g('ni'+t);inp.focus();inp.select();
+    function save(){i.note=inp.value.trim();i.updated=TODAY;render();scheduleSave();}
+    inp.addEventListener('blur',save);
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();save();}if(e.key==='Escape')render();});
+  }
+
+  function parseCSV(tx) {
+    const lines=tx.replace(/^\ufeff/,'').split('\n').filter(l=>l.trim());
+    const h=lines[0].toLowerCase().split(',');
+    const ti=h.indexOf('ticker'),si=h.indexOf('score'),ci=h.indexOf('category'),ni=h.findIndex(x=>x.includes('note')),ui=h.indexOf('updated');
+    if(ti<0) throw new Error('Не знайдено колонку Ticker');
+    return lines.slice(1).map(l=>{
+      const cols=l.split(',');
+      const cat=(cols[ci]||'Watch').trim();
+      return {ticker:(cols[ti]||'').trim().toUpperCase(),score:parseInt(cols[si])||0,cat:cat==='Short'?'S_Watch':cat,note:(ni>=0?cols[ni]||'':'').trim().replace(/;/g,','),updated:(ui>=0?cols[ui]||'':'').trim()||TODAY,history:[]};
+    }).filter(d=>d.ticker);
+  }
+
+  function exportCSV() {
+    const h=['Ticker','Score','Delta7d','Category','Note','Updated'];
+    const rows=D.map(d=>[d.ticker,d.score,d7(d),d.cat,(d.note||'').replace(/,/g,';'),d.updated||'']);
+    return [h,...rows].map(r=>r.join(',')).join('\n');
+  }
+
+  const SEED = `Ticker,Score,Delta7d,Category,Note,Updated
+SPY,-5,0,Long,S&P 500,20.03.2026
+IHI,1,0,Long,Healthcare ETF,20.03.2026
+TLT,-12,0,Long,,20.03.2026
+PHYS,12,0,Long,Gold Trust,20.03.2026
+BRK.B,2,0,Long,,20.03.2026
+AAPL,2,0,Long,,20.03.2026
+NVDA,1,0,Long,,20.03.2026
+MSFT,-1,0,Long,,20.03.2026
+GOOG,-1,0,Long,,20.03.2026
+AMZN,-2,0,Long,,20.03.2026
+SGOV,23,0,Long,0-3M T-Bills,20.03.2026
+WMT,8,0,Long,,20.03.2026
+SCHD,4,0,Long,Dividend ETF,20.03.2026
+META,-5,0,Long,,20.03.2026
+NFLX,6,0,Long,,20.03.2026
+RSP,6,0,Long,Equal Weight,20.03.2026
+XLF,-6,0,Long,Financials,20.03.2026
+MS,3,0,Long,,20.03.2026
+JPM,6,0,Long,,20.03.2026
+BLK,3,0,Long,,20.03.2026
+LLY,1,0,Long,,20.03.2026
+NVO,-5,0,Long,,20.03.2026
+CBOE,2,0,Long,,20.03.2026
+COST,11,0,Long,,20.03.2026
+AMGN,0,0,Hype,,20.03.2026
+PLTR,38,0,Hype,AI Defense,20.03.2026
+BOTZ,13,0,Hype,Robotics ETF,20.03.2026
+VRT,29,0,Hype,Power Mgmt,20.03.2026
+PWR,45,0,Hype,Grid Infra,20.03.2026
+ETN,51,0,Hype,черга замовлень,20.03.2026
+CAT,24,0,Hype,,20.03.2026
+MTZ,27,0,Hype,,20.03.2026
+FLR,16,0,Hype,,20.03.2026
+CEG,54,0,Hype,Nuclear,20.03.2026
+VST,71,0,Hype,Nuclear,20.03.2026
+COPX,46,0,Hype,Copper ETF,20.03.2026
+FCX,83,0,Hype,Copper,20.03.2026
+URA,72,0,Hype,Uranium ETF,20.03.2026
+CCJ,82,0,Hype,Uranium,20.03.2026
+FNUC,9,0,Hype,,20.03.2026
+NEM,45,0,Hype,Gold,20.03.2026
+MP,44,0,Hype,Rare Earth,20.03.2026
+ASPI,6,0,Hype,Uranium,20.03.2026
+WDEF,40,0,Hype,Europe Defence,20.03.2026
+AVAV,29,0,Hype,Drones,20.03.2026
+RTX,48,0,Hype,Defense,20.03.2026
+UUUU,23,0,Hype,Bull Sprd Jan28 17.5/30C,20.03.2026
+CORZ,9,0,Hype,BTC Miner,20.03.2026
+IWM,15,0,Trade,Bear Sprd Jun18 250/220P,20.03.2026
+F,5,0,Trade,Bear Sprd Jun18 11/10P,20.03.2026
+KMX,16,0,Trade,Put Apr17 40P,20.03.2026
+SBUX,9,0,Trade,Put May15 90P,20.03.2026
+CCL,16,0,Trade,Bear Sprd Jun18 25/22P,20.03.2026
+AAL,9,0,Trade,Bear Sprd Jun18 11/7P,20.03.2026
+UPS,9,0,Trade,Bear Sprd Jun18 100/85P,20.03.2026
+UPWK,5,0,Trade,Put Jul17 12.5P,20.03.2026
+ARCC,12,0,Trade,Bear Sprd Jun18 17/16P,20.03.2026
+QQQ,-11,0,Trade,Bear Sprd Jun30 590/530P,20.03.2026
+XSP,0,0,Trade,Bear Sprd Sep18 650/551P,20.03.2026
+HPQ,1,0,Trade,Put Apr17 19P,20.03.2026
+XLY,-6,0,S_Watch,Consumer Disc,20.03.2026
+RIVN,-12,0,S_Watch,EV,20.03.2026
+NKE,-10,0,S_Watch,Nike,20.03.2026
+CAVA,-4,0,S_Watch,,20.03.2026
+CMG,-4,0,S_Watch,,20.03.2026
+TGT,-7,0,S_Watch,,20.03.2026
+M,-4,0,S_Watch,Macys,20.03.2026
+KSS,-3,0,S_Watch,,20.03.2026
+KR,0,0,S_Watch,,20.03.2026
+TSN,-3,0,S_Watch,Tyson Foods,20.03.2026
+KHC,-5,0,S_Watch,,20.03.2026
+DIS,-4,0,S_Watch,,20.03.2026
+ETSY,-8,0,S_Watch,,20.03.2026
+ABNB,-10,0,S_Watch,,20.03.2026
+NCLH,-18,0,S_Watch,Cruise,20.03.2026
+TCOM,-6,0,S_Watch,Trip.com,20.03.2026
+JETS,-10,0,S_Watch,Airlines ETF,20.03.2026
+LUV,-10,0,S_Watch,Southwest,20.03.2026
+UAL,-11,0,S_Watch,United,20.03.2026
+OPEN,-6,0,S_Watch,Real Estate,20.03.2026
+COMP,-4,0,S_Watch,Real Estate,20.03.2026
+Z,-5,0,S_Watch,Zillow,20.03.2026
+INFY,-3,0,S_Watch,,20.03.2026
+IGV,0,0,S_Watch,Software ETF,20.03.2026
+BOX,-8,0,S_Watch,,20.03.2026
+TWLO,-8,0,S_Watch,,20.03.2026
+PATH,-8,0,S_Watch,UiPath,20.03.2026
+TEAM,-8,0,S_Watch,Atlassian,20.03.2026
+SNOW,-12,0,S_Watch,,20.03.2026
+U,-10,0,S_Watch,Unity,20.03.2026
+ADBE,-9,0,S_Watch,,20.03.2026
+NICE,-8,0,S_Watch,,20.03.2026
+FROG,-8,0,S_Watch,,20.03.2026
+DOCU,-8,0,S_Watch,,20.03.2026
+PAYX,-6,0,S_Watch,,20.03.2026
+MNDY,-9,0,S_Watch,,20.03.2026
+ASAN,-9,0,S_Watch,,20.03.2026
+OWL,-16,0,S_Watch,Asset Mgmt,20.03.2026
+APO,-16,0,S_Watch,Apollo,20.03.2026
+KRE,-15,0,S_Watch,Regional Banks,20.03.2026
+PINS,-2,0,S_Watch,Pinterest,20.03.2026
+TSM,-1,0,Watch,Taiwan risk,20.03.2026
+NAVN,-1,0,Watch,,20.03.2026
+SHOP,4,0,Watch,,20.03.2026
+NOW,4,0,Watch,ServiceNow,20.03.2026
+PANW,14,0,Watch,Cybersec,20.03.2026
+MU,21,0,Watch,Memory,20.03.2026
+ANET,9,0,Watch,,20.03.2026
+AVGO,14,0,Watch,,20.03.2026
+METC,3,0,Watch,,20.03.2026
+UEC,23,0,Watch,Uranium,20.03.2026
+OKLO,7,0,Watch,SMR,20.03.2026
+SMR,11,0,Watch,NuScale,20.03.2026
+BWXT,42,0,Watch,Navy Nuclear,20.03.2026
+COIN,15,0,Watch,Crypto,20.03.2026
+IBIT,9,0,Watch,BTC ETF,20.03.2026
+XBI,1,0,Watch,Biotech,20.03.2026
+IBB,1,0,Watch,Biotech ETF,20.03.2026
+ISRG,8,0,Watch,,20.03.2026
+SYM,6,0,Watch,,20.03.2026
+EQIX,4,0,Watch,Data Centers,20.03.2026
+DLR,5,0,Watch,Data Centers,20.03.2026
+GEV,38,0,Watch,Grid Equip,20.03.2026
+NEE,6,0,Watch,NextEra,20.03.2026
+POWL,13,0,Watch,,20.03.2026
+CLS,14,0,Watch,,20.03.2026
+ROK,4,0,Watch,,20.03.2026
+TEL,10,0,Watch,,20.03.2026
+TSLA,-2,0,Watch,,20.03.2026
+TER,10,0,Watch,,20.03.2026
+AMAT,13,0,Watch,,20.03.2026
+SMH,0,0,Watch,Semi ETF,20.03.2026
+ASML,11,0,Watch,,20.03.2026
+TXN,12,0,Watch,,20.03.2026
+MPWR,10,0,Watch,,20.03.2026
+CRDO,6,0,Watch,,20.03.2026
+ENTG,0,0,Watch,Chip materials,20.03.2026
+BAM,-2,0,Watch,,20.03.2026
+LIN,11,0,Watch,,20.03.2026
+GLNCY,3,0,Watch,,20.03.2026
+TTE,8,0,Watch,TotalEnergies,20.03.2026
+SBGSY,4,0,Watch,Schneider ADR,20.03.2026
+ABBNY,3,0,Watch,ABB ADR,20.03.2026
+RNMBY,29,0,Watch,Rheinmetall ADR,20.03.2026
+BEPC,3,0,Watch,,20.03.2026
+XPO,2,0,Watch,,20.03.2026
+MOS,22,0,Watch,Fertilizers,20.03.2026
+CF,30,0,Watch,Food Security,20.03.2026
+NTR,10,0,Watch,Fertilizers,20.03.2026
+CTVA,19,0,Watch,Seeds+Agrochem,20.03.2026
+MOO,17,0,Watch,Agri ETF,20.03.2026
+DE,7,0,Watch,,20.03.2026
+ADM,15,0,Watch,Grain trading,20.03.2026
+BG,13,0,Watch,Bunge,20.03.2026
+GRID,3,0,Watch,Smart Grid ETF,20.03.2026
+XYZ,3,0,Watch,,20.03.2026
+BE,2,0,Watch,Bloom Energy,20.03.2026
+CIFR,9,0,Watch,BTC Miner,20.03.2026
+APLD,7,0,Watch,BTC Miner,20.03.2026
+IREN,7,0,Watch,BTC Miner,20.03.2026
+SLV,24,0,Watch,Silver ETF,20.03.2026
+PSLV,28,0,Watch,Physical Silver,20.03.2026
+SIL,24,0,Watch,Silver Miners,20.03.2026
+PAAS,28,0,Watch,Pan Am Silver,20.03.2026
+SETM,27,0,Watch,Critical Materials,20.03.2026
+REMX,30,0,Watch,Rare Earth ETF,20.03.2026
+TECK,39,0,Watch,Copper+Zinc,20.03.2026
+BHP,6,0,Watch,,20.03.2026
+RIO,11,0,Watch,,20.03.2026
+VALE,10,0,Watch,,20.03.2026
+MTRN,9,0,Watch,Materion,20.03.2026
+ALB,10,0,Watch,Lithium,20.03.2026
+WPM,48,0,Watch,Gold+Silver Royalty,20.03.2026
+B,37,0,Watch,Barrick Gold,20.03.2026
+PPTA,36,0,Watch,Antimony+Gold,20.03.2026
+XME,19,0,Watch,Metals ETF,20.03.2026
+PICK,12,0,Watch,,20.03.2026
+ILF,13,0,Watch,LatAm ETF,20.03.2026
+PAVE,10,0,Watch,Infra ETF,20.03.2026
+XLI,17,0,Watch,Industrials,20.03.2026
+XLE,34,0,Watch,Energy ETF,20.03.2026
+LNG,26,0,Watch,Cheniere,20.03.2026
+EQT,16,0,Watch,Gas producer,20.03.2026
+OIH,5,0,Watch,Oil Services,20.03.2026
+SLB,17,0,Watch,Oilfield Svc,20.03.2026
+HAL,7,0,Watch,,20.03.2026
+XOM,15,0,Watch,Exxon,20.03.2026
+CVX,19,0,Watch,Venezuela play,20.03.2026
+VLO,26,0,Watch,Refinery,20.03.2026
+KBR,5,0,Watch,,20.03.2026
+VMC,10,0,Watch,,20.03.2026
+CRS,2,0,Watch,Ind+Defence,20.03.2026
+LMT,51,0,Watch,Defense,20.03.2026
+HII,31,0,Watch,Shipbuilding,20.03.2026
+FDX,2,0,Watch,Spin-off Jun1,20.03.2026
+DELL,1,0,Watch,Post-SMCI beneficiary,20.03.2026
+SMCI,-2,0,S_Watch,Chip smuggling criminal,20.03.2026`;
+
+  // ─── EVENTS ───
+  g('imp-toggle').addEventListener('click', () => {
+    const b=g('imp-box'); b.style.display=b.style.display==='none'?'block':'none';
+  });
+  g('imp-btn').addEventListener('click', () => {
+    const tx=g('cit').value.trim();
+    if(!tx){g('imp-msg').textContent='⚠ Вставте CSV';return;}
+    try {
+      D=parseCSV(tx); render(); upS();
+      g('cit').value=''; g('imp-box').style.display='none';
+      g('top-msg').textContent='✓ '+D.length+' тікерів';
+      saveToSupabase();
+    } catch(e){g('imp-msg').textContent='✗ '+e.message;}
+  });
+  g('exp-btn').addEventListener('click', () => {
+    g('cet').value=exportCSV(); g('exp-box').style.display='block';
+    setTimeout(()=>g('cet').select(),100);
+  });
+  g('exp-close').addEventListener('click', () => g('exp-box').style.display='none');
+  g('clr-btn').addEventListener('click', () => {
+    if(!confirm('Очистити все?'))return;
+    D=[]; render(); upS();
+    saveToSupabase();
+    g('top-msg').textContent='Очищено';
+  });
+  g('add-btn').addEventListener('click', () => {
+    const t=(g('nt').value||'').trim().toUpperCase(),s=parseInt(g('ns').value)||0,c=g('nc').value,n=(g('nn').value||'').trim();
+    if(!t)return;
+    const e=D.find(d=>d.ticker===t);
+    if(e){e.score+=s;e.cat=c;e.updated=TODAY;if(n)e.note=n;if(s)e.history.push({ts:NTS,d:s});}
+    else D.push({ticker:t,score:s,cat:c,note:n,updated:TODAY,history:s?[{ts:NTS,d:s}]:[]});
+    g('nt').value='';g('ns').value='0';g('nn').value='';
+    render();upS();scheduleSave();
+  });
+  g('nt').addEventListener('keydown', e=>{if(e.key==='Enter')g('add-btn').click();});
+  g('srch').addEventListener('input', render);
+  document.querySelectorAll('.fb').forEach(b=>b.addEventListener('click',function(){
+    FM=this.dataset.f;
+    if(FM==='S_Watch'&&SK==='score')SD=1; else if(SK==='score')SD=-1;
+    document.querySelectorAll('.fb').forEach(x=>x.classList.remove('a'));
+    this.classList.add('a'); render();
+  }));
+  document.querySelectorAll('thead th[data-s]').forEach(th=>th.addEventListener('click',function(){
+    const k=this.dataset.s;
+    if(SK===k)SD*=-1; else{SK=k;SD=(k==='score'&&FM==='S_Watch')?1:(k==='score'||k==='d7')?-1:1;}
+    ['hs0','hs1','hs2','hs3','hs4'].forEach(x=>g(x)&&(g(x).textContent=''));
+    const m={ticker:'hs0',score:'hs1',d7:'hs2',cat:'hs3',updated:'hs4'};
+    if(m[k])g(m[k]).textContent=SD===1?'↑':'↓';
+    render();
+  }));
+  g('bulk-btn').addEventListener('click',()=>{
+    const tx=g('bi').value;let n=0;
+    for(const m of tx.matchAll(/([A-Z_\.]{1,8})([\+\-])(\d+)/gi)){
+      const t=m[1].toUpperCase(),delta=parseInt(m[2]+m[3]),e=D.find(x=>x.ticker===t);
+      if(e){e.score+=delta;e.updated=TODAY;e.history.push({ts:NTS,d:delta});}
+      else D.push({ticker:t,score:delta,cat:'Watch',note:'',updated:TODAY,history:[{ts:NTS,d:delta}]});
+      n++;
+    }
+    const el=g('bulk-msg');
+    el.textContent=n>0?'✓ '+n+' тікерів збережено в хмарі':'⚠ Нічого';
+    setTimeout(()=>el.textContent='',5000);
+    render();upS();
+    if(n>0) saveToSupabase();
+  });
+  g('bulk-clr').addEventListener('click',()=>g('bi').value='');
+
+  // ─── INIT ───
+  loadFromSupabase();
+})();
+</script>
+</body>
+</html>
