@@ -10,9 +10,9 @@ exports.handler = async () => {
   );
 
   const rows = await res.json();
-  const data = JSON.parse(rows[0].data);
+  // jsonb — вже об'єкт, JSON.parse не потрібен
+  const data = rows[0].data;
 
-  // Тільки потрібні поля, без history
   const clean = data.map(({ ticker, score, cat, note, updated }) => ({
     ticker, score, cat, note, updated
   }));
@@ -26,3 +26,8 @@ exports.handler = async () => {
     body: JSON.stringify(clean)
   };
 };
+```
+
+Commit → зачекай деплой → вставте:
+```
+https://watchlist3000.netlify.app/.netlify/functions/watchlist-public
